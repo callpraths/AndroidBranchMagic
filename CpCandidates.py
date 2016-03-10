@@ -13,8 +13,9 @@ def PrintName(name):
 
 scriptPath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           'cp_candidates.sh')
-def CpCandidate(remote, fromBranch, toBranch, restArgs, _name):
-  subprocess.call([scriptPath, remote, fromBranch, toBranch] + restArgs)
+def CpCandidate(remote, fromBranch, toBranch, projects, restArgs, name):
+  if (not projects) or name in projects:
+    subprocess.call([scriptPath, remote, fromBranch, toBranch] + restArgs)
 
 
 def main(argv):
@@ -26,6 +27,11 @@ def main(argv):
                       help='Name of the branch you want to cp from.')
   parser.add_argument('to_branch', metavar='to-branch',
                       help='Name of the branch you want to cp to.')
+  parser.add_argument('--project', default=[], action='append',
+                      help='Restrict to project. By default, all projects are '
+                           'scanned. Use multiple times to list more than one '
+                           'project.')
+
   parser.add_argument('--remote', default='goog',
                       help='Name of the git remote. default: goog')
   parser.add_argument('--log-filter', default='',
@@ -41,6 +47,7 @@ def main(argv):
                           lambda x: CpCandidate(opts.remote,
                                                 opts.from_branch,
                                                 opts.to_branch,
+                                                set(opts.project),
                                                 opts.log_filter.split(),
                                                 x),
                           stopOnError=False)
